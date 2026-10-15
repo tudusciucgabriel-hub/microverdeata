@@ -1,0 +1,16 @@
+{
+  "name": "Program Microverdeață",
+  "short_name": "Microverdeață",
+  "description": "Calendar zilnic de semănat, udat și recoltat pentru tăvile de microverdeață.",
+  "lang": "ro",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f3f5f1",
+  "theme_color": "#2d6a3e",
+  "icons": [
+    {"src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable"},
+    {"src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"}
+  ]
+}

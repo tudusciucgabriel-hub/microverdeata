@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#2d6a3e">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Microverdeață">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<style>html{padding-top:env(safe-area-inset-top,0px)}body{margin:0}</style>
+<title>Program Microverdeață</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Calendar zilnic de semănat, udat și recoltat pentru tăvile de microverdeață.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: aplicație pentru telefon, 4 file jos (Azi, Program, Apă, Setări); conținutul curge pe o singură coloană,
+   tabelele au prima coloană fixă și derulează orizontal în containerul lor. */
+:root{
+  --bg:#f3f5f1; --surface:#ffffff; --fg:#1b261d; --muted:#5d6b60; --line:#d9dfd6;
+  --accent:#2d6a3e; --accent-fg:#ffffff; --today:#d92d20; --today-fg:#ffffff; --soft:#e7ede4;
+  --s-bg:#6b4f33; --s-fg:#ffffff;
+  --i-bg:#4b7fb3; --i-fg:#ffffff;
+  --p-bg:#bfe3ea; --p-fg:#10303a;
+  --l-bg:#f1c24b; --l-fg:#2b2100;
+  --u-bg:#dbe9f6; --u-fg:#12304d;
+  --r-bg:#1b261d; --r-fg:#ffffff;
+  --display:"Bricolage Grotesque",system-ui,sans-serif;
+  --body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#101612; --surface:#18211b; --fg:#e8efe9; --muted:#9bab9f; --line:#2b372e; --soft:#202c23;
+    --accent:#6fcf88; --accent-fg:#0b1a10; --today:#ff5a4d; --today-fg:#ffffff;
+    --s-bg:#a98660; --s-fg:#1a1208; --i-bg:#6aa2d6; --i-fg:#08192b;
+    --p-bg:#25525c; --p-fg:#d9f1f5; --l-bg:#d6a526; --l-fg:#1d1500;
+    --u-bg:#1f3a54; --u-fg:#d8e9f9; --r-bg:#e8efe9; --r-fg:#101612;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#101612; --surface:#18211b; --fg:#e8efe9; --muted:#9bab9f; --line:#2b372e; --soft:#202c23;
+  --accent:#6fcf88; --accent-fg:#0b1a10; --today:#ff5a4d; --today-fg:#ffffff;
+  --s-bg:#a98660; --s-fg:#1a1208; --i-bg:#6aa2d6; --i-fg:#08192b;
+  --p-bg:#25525c; --p-fg:#d9f1f5; --l-bg:#d6a526; --l-fg:#1d1500;
+  --u-bg:#1f3a54; --u-fg:#d8e9f9; --r-bg:#e8efe9; --r-fg:#101612;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.45;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:16px 96px}
+main{max-width:720px;margin:0 auto}
+h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:12px}
+.top h1{font-size:1.15rem;font-weight:700;letter-spacing:-.01em}
+.top .tray{font-size:.78rem;color:var(--muted)}
+/* day header */
+.hero{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;align-items:center;gap:12px}
+.hero .nav{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--bg);font-size:1.4rem;line-height:1}
+.hero .nav:disabled{opacity:.35;cursor:default}
+.hero .mid{flex:1;text-align:center;min-width:0}
+.hero .big{font-family:var(--display);font-weight:700;font-size:2.4rem;line-height:1;letter-spacing:-.02em}
+.hero .big small{font-size:1rem;font-weight:500;color:var(--muted);letter-spacing:0}
+.hero .date{color:var(--muted);font-size:.95rem;margin-top:4px}
+.hero .date::first-letter{text-transform:uppercase}
+.tag{display:inline-block;font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border-radius:999px;padding:2px 10px;margin-top:8px;background:var(--soft);color:var(--muted)}
+.tag.now{background:var(--today);color:var(--today-fg)}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:12px 2px 6px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;min-width:44px;height:40px;border-radius:12px;border:1px solid var(--line);background:var(--surface);font-weight:600;font-variant-numeric:tabular-nums}
+.chip.on{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+.chip.today{box-shadow:inset 0 -3px 0 var(--today)}
+.notice{margin-top:12px;border-radius:12px;padding:12px 14px;background:var(--soft);font-size:.95rem}
+.notice.warn{background:var(--today);color:var(--today-fg);font-weight:600}
+/* totals */
+.total{margin-top:12px;display:flex;align-items:baseline;justify-content:space-between;gap:12px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:12px 2px}
+.total .n{font-family:var(--display);font-weight:700;font-size:1.7rem;font-variant-numeric:tabular-nums}
+.total .s{color:var(--muted);font-size:.85rem;text-align:right}
+/* task groups */
+.group{margin-top:18px}
+.group h2{font-size:1rem;font-weight:700;display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.group .hint{color:var(--muted);font-size:.85rem;margin-bottom:8px}
+.badge{display:inline-grid;place-items:center;min-width:28px;height:28px;border-radius:8px;font-weight:700;font-size:.9rem;padding:0 6px}
+.c-S{background:var(--s-bg);color:var(--s-fg)} .c-Î{background:var(--i-bg);color:var(--i-fg)}
+.c-P{background:var(--p-bg);color:var(--p-fg)} .c-L{background:var(--l-bg);color:var(--l-fg)}
+.c-U{background:var(--u-bg);color:var(--u-fg)} .c-R{background:var(--r-bg);color:var(--r-fg)}
+.rows{list-style:none;margin:0;padding:0;background:var(--surface);border:1px solid var(--line);border-radius:14px}
+.rows li{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;min-height:50px}
+.rows li+li{border-top:1px solid var(--line)}
+.rows .pn{font-weight:600;min-width:0}
+.rows .pn small{display:block;color:var(--muted);font-weight:400;font-size:.82rem}
+.rows .amt{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
+.empty{margin-top:24px;color:var(--muted);text-align:center}
+/* tables */
+.sec-title{font-size:1.25rem;margin-bottom:4px}
+.sec-sub{color:var(--muted);font-size:.9rem;margin-bottom:12px}
+.scroll{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+table{border-collapse:separate;border-spacing:0;font-variant-numeric:tabular-nums;width:max-content;min-width:100%}
+th,td{padding:0;text-align:center;border-bottom:1px solid var(--line);border-right:1px solid var(--line);height:44px;min-width:56px;font-size:.9rem}
+tr>*:last-child{border-right:0}
+tbody tr:last-child>*{border-bottom:0}
+thead th{background:var(--fg);color:var(--bg);font-weight:600;position:sticky;top:0}
+thead th button{all:unset;display:block;width:100%;height:44px;line-height:44px;cursor:pointer}
+thead th.today{background:var(--today);color:var(--today-fg)}
+thead tr.dates th{background:var(--soft);color:var(--muted);font-size:.72rem;font-weight:500;height:26px}
+thead tr.dates th.today{background:var(--today);color:var(--today-fg)}
+th.pl,td.pl{position:sticky;left:0;z-index:2;text-align:left;padding:0 12px;min-width:132px;font-weight:600;background:var(--surface);box-shadow:1px 0 0 var(--line)}
+thead th.pl{background:var(--fg);color:var(--bg);z-index:3}
+thead tr.dates th.pl{background:var(--soft);color:var(--muted)}
+td.today{box-shadow:inset 3px 0 0 var(--today),inset -3px 0 0 var(--today)}
+tbody tr:last-child td.today,tr.sum td.today{box-shadow:inset 3px 0 0 var(--today),inset -3px 0 0 var(--today),inset 0 -3px 0 var(--today)}
+td.c-S,td.c-Î,td.c-P,td.c-L,td.c-U,td.c-R{font-weight:700}
+td .sm{display:block;font-size:.62rem;font-weight:500;opacity:.8;line-height:1}
+tr.sum td,tr.sum th{background:var(--soft);font-weight:700}
+.legend{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:8px 16px;margin-top:14px;font-size:.88rem}
+.legend div{display:flex;align-items:center;gap:10px}
+/* settings */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;margin-top:14px}
+.card h3{font-size:1.05rem;margin-bottom:8px}
+label{display:block;font-weight:600;font-size:.9rem;margin-bottom:6px}
+input[type=date],input[type=number]{width:100%;height:46px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--fg);font:inherit;padding:0 12px}
+.grid2{display:grid;grid-template-columns:1fr 92px 92px;gap:8px;align-items:center}
+.grid2 .h{font-size:.75rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+.grid2 .nm{font-weight:600;min-width:0}
+.grid2 input{height:42px;text-align:center;padding:0 6px}
+.btn{height:46px;border-radius:12px;border:1px solid var(--line);background:var(--bg);font-weight:600;padding:0 16px;margin-top:12px}
+.btn.primary{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+.fine{color:var(--muted);font-size:.85rem;margin-top:8px}
+/* bottom nav */
+nav{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);
+  display:grid;grid-template-columns:repeat(4,1fr);gap:4px;
+  padding:8px max(16px,env(safe-area-inset-right,0px)) calc(8px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+nav button{border:0;background:none;border-radius:12px;height:52px;font-weight:600;font-size:.85rem;color:var(--muted);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+nav button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+nav button[aria-selected="true"]{color:var(--accent);background:var(--soft)}
+@media (prefers-reduced-motion:no-preference){.rows li,.hero{transition:background .15s}}
+</style>
+</head>
+<body>
+
+
+<main>
+  <div class="top"><h1>Microverdeață</h1><span class="tray">tavă 24,5 × 32,5 cm</span></div>
+  <section id="v-azi"></section>
+  <section id="v-prog" hidden></section>
+  <section id="v-apa" hidden></section>
+  <section id="v-set" hidden></section>
+</main>
+
+<nav role="tablist" aria-label="Secțiuni">
+  <button role="tab" data-tab="azi" aria-selected="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg>Azi</button>
+  <button role="tab" data-tab="prog" aria-selected="false"><svg viewBox="0 0 24 24"><rect x="3.5" y="4" width="17" height="16" rx="2"/><path d="M3.5 9.5h17M3.5 14.5h17M9.5 4v16"/></svg>Program</button>
+  <button role="tab" data-tab="apa" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M12 3.5c3 3.7 5.5 6.5 5.5 9.8a5.5 5.5 0 0 1-11 0C6.5 10 9 7.2 12 3.5Z"/></svg>Apă</button>
+  <button role="tab" data-tab="set" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>Setări</button>
+</nav>
+
+<script>
+(function(){
+  var N=13, KEY="microverdeata-v1", DEF_START="2026-10-15";
+  var PLANTS=[
+    {n:"Rucola",sow:1,dark:4,sp:20,wa:80},
+    {n:"Amarant",sow:1,dark:4,sp:15,wa:70},
+    {n:"Pak Choi",sow:3,dark:3,sp:20,wa:90},
+    {n:"Mazăre",sow:3,dark:4,soak:2,sp:30,wa:200,weight:true},
+    {n:"Fasole și Mazăre",sow:3,dark:4,soak:2,sp:30,wa:200,weight:true},
+    {n:"Broccoli",sow:4,dark:3,sp:20,wa:90},
+    {n:"Gulie Kohlrabi",sow:4,dark:3,sp:20,wa:90},
+    {n:"Varză Albă",sow:4,dark:3,sp:20,wa:90},
+    {n:"Muștar",sow:5,dark:3,sp:20,wa:80},
+    {n:"Ridiche Daikon",sow:6,dark:3,sp:20,wa:90},
+    {n:"Ridiche Purpurie",sow:6,dark:3,sp:20,wa:90},
+    {n:"Fasole Mung",sow:7,dark:4,soak:6,sp:30,wa:200}
+  ];
+  var ACTION={S:"Semeni + pulverizezi","Î":"Înmoi semințele seara",P:"Pulverizezi",L:"Scoți la lumină + uzi",U:"Uzi de jos",R:"Recoltezi"};
+  var HINT={S:"Acoperi tăvile, fără lumină.","Î":"8–12 ore, le semeni a doua zi.",P:"De 2 ori pe zi (dimineața și seara), în întuneric.",
+    L:"Tăvile ies din întuneric. De azi uzi de jos.",U:"O dată pe zi, de jos: torni în tava de dedesubt, aștepți 15–20 min și arunci restul.",R:"Tai dimineața, fără să mai uzi."};
+  var ORDER=["R","L","U","P","S","Î"];
+  var state={start:DEF_START,ov:{},view:1,tab:"azi"};
+
+  function load(){try{var s=JSON.parse(localStorage.getItem(KEY)||"null");if(s){if(typeof s.start==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(s.start))state.start=s.start;if(s.ov&&typeof s.ov==="object")state.ov=s.ov;}}catch(e){}}
+  function save(){try{localStorage.setItem(KEY,JSON.stringify({start:state.start,ov:state.ov}));}catch(e){}}
+  function amounts(p){var o=state.ov[p.n]||{};return{sp:num(o.sp,p.sp),wa:num(o.wa,p.wa)};}
+  function num(v,d){v=Number(v);return isFinite(v)&&v>=0&&v!==""?v:d;}
+  function code(p,d){
+    if(p.soak===d)return"Î"; if(d===p.sow)return"S";
+    if(d>p.sow&&d<=p.sow+p.dark)return"P";
+    if(d>p.sow+p.dark&&d<N)return d===p.sow+p.dark+1?"L":"U";
+    if(d===N)return"R"; return"";
+  }
+  function ml(p,c){var a=amounts(p);return(c==="S"||c==="P")?2*a.sp:(c==="L"||c==="U")?a.wa:0;}
+  function startDate(){var m=state.start.split("-").map(Number);return new Date(m[0],m[1]-1,m[2]);}
+  function dayDate(d){var s=startDate();return new Date(s.getFullYear(),s.getMonth(),s.getDate()+d-1);}
+  function todayDay(){var t=new Date(),a=new Date(t.getFullYear(),t.getMonth(),t.getDate()),s=startDate();return Math.round((a-s)/864e5)+1;}
+  var fLong=new Intl.DateTimeFormat("ro-RO",{weekday:"long",day:"numeric",month:"long"});
+  var fShort=new Intl.DateTimeFormat("ro-RO",{day:"2-digit",month:"2-digit"});
+  function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+  function inRange(d){return d>=1&&d<=N;}
+
+  /* ---------- Azi ---------- */
+  function renderAzi(){
+    var t=todayDay(), d=state.view, el=document.getElementById("v-azi");
+    var h='<div class="hero"><button class="nav" id="prev" aria-label="Ziua anterioară"'+(d<=1?" disabled":"")+'>‹</button>'+
+      '<div class="mid"><div class="big">Ziua '+d+' <small>din '+N+'</small></div><div class="date">'+esc(fLong.format(dayDate(d)))+'</div>'+
+      (d===t?'<span class="tag now">Azi</span>':'<span class="tag">'+(inRange(t)?(d===t+1?"Mâine":d===t-1?"Ieri":"Altă zi"):"Previzualizare")+'</span>')+'</div>'+
+      '<button class="nav" id="next" aria-label="Ziua următoare"'+(d>=N?" disabled":"")+'>›</button></div>';
+    h+='<div class="chips" role="group" aria-label="Alege ziua">';
+    for(var i=1;i<=N;i++)h+='<button class="chip'+(i===d?" on":"")+(i===t?" today":"")+'" data-day="'+i+'" aria-pressed="'+(i===d)+'">'+i+'</button>';
+    h+='</div>';
+    if(t<1)h+='<div class="notice">Programul începe pe '+esc(fLong.format(dayDate(1)))+' (peste '+(1-t)+' '+(1-t===1?"zi":"zile")+').</div>';
+    else if(t>N)h+='<div class="notice">Programul s-a încheiat. Schimbi data de start din Setări pentru un nou ciclu.</div>';
+    if(d===12)h+='<div class="notice warn">Ultima udare: doar dimineața. Mâine recoltezi.</div>';
+    if(d===13)h+='<div class="notice warn">Zi de recoltare: nu mai uzi, tai dimineața.</div>';
+
+    var groups={},sp=0,wa=0;
+    PLANTS.forEach(function(p){var c=code(p,d);if(!c)return;(groups[c]=groups[c]||[]).push(p);var m=ml(p,c);if(c==="S"||c==="P")sp+=m;else wa+=m;});
+    var any=false;
+    var body="";
+    ORDER.forEach(function(c){
+      var list=groups[c];if(!list)return;any=true;
+      body+='<div class="group"><h2><span class="badge c-'+c+'">'+c+'</span>'+ACTION[c]+'</h2><div class="hint">'+HINT[c]+'</div><ul class="rows">';
+      list.forEach(function(p){
+        var a=amounts(p),amt="",note="";
+        if(c==="S"||c==="P")amt="2 × "+a.sp+" ml"; else if(c==="L"||c==="U")amt=a.wa+" ml";
+        if(c==="S"&&p.weight)note="Pune 1–2 kg peste tavă.";
+        if(c==="Î")note="Seara, "+(p.n==="Fasole Mung"?"pentru semănat mâine":"pentru semănat mâine");
+        if(c==="U"&&d===12)note="Doar dimineața.";
+        body+='<li><span class="pn">'+esc(p.n)+(note?'<small>'+esc(note)+'</small>':'')+'</span><span class="amt">'+amt+'</span></li>';
+      });
+      body+='</ul></div>';
+    });
+    if(any){
+      h+='<div class="total"><div><div class="s" style="text-align:left">Apă în ziua '+d+'</div><div class="n">'+(sp+wa).toLocaleString("ro-RO")+' ml</div></div>'+
+         '<div class="s">pulverizare '+sp+' ml<br>udare de jos '+wa+' ml</div></div>'+body;
+    } else h+='<p class="empty">Nu ai nimic de făcut în această zi.</p>';
+    el.innerHTML=h;
+    el.querySelector("#prev").onclick=function(){go(d-1);};
+    el.querySelector("#next").onclick=function(){go(d+1);};
+    Array.prototype.forEach.call(el.querySelectorAll(".chip"),function(b){b.onclick=function(){go(+b.dataset.day);};});
+    var on=el.querySelector(".chip.on");if(on&&on.scrollIntoView)try{on.scrollIntoView({inline:"center",block:"nearest"});}catch(e){}
+  }
+  function go(d){state.view=Math.max(1,Math.min(N,d));renderAzi();}
+
+  /* ---------- Tabele ---------- */
+  function head(t){
+    var h='<thead><tr><th class="pl">Plantă</th>';
+    for(var d=1;d<=N;d++)h+='<th class="'+(d===t?"today":"")+'"><button data-day="'+d+'" aria-label="Deschide ziua '+d+'">Ziua '+d+'</button></th>';
+    h+='</tr><tr class="dates"><th class="pl">Data</th>';
+    for(d=1;d<=N;d++)h+='<th class="'+(d===t?"today":"")+'">'+esc(fShort.format(dayDate(d)))+'</th>';
+    return h+'</tr></thead>';
+  }
+  function legend(water){
+    var items=[["S",water?"semănat + pulverizat (ml pe zi: 2 × cantitatea)":"semănat + pulverizat (în întuneric)"],["Î","înmoi semințele seara (8–12 ore)"],
+      ["P",water?"pulverizezi 2×/zi, în întuneric":"pulverizezi 2×/zi, în întuneric"],["L","scos la lumină + udare de jos"],
+      ["U","udare de jos 1×/zi (ziua 12 doar dimineața)"],["R","recoltare, nu mai uzi"]];
+    return '<div class="legend">'+items.map(function(i){return'<div><span class="badge c-'+i[0]+'">'+i[0]+'</span><span>'+i[1]+'</span></div>';}).join("")+'</div>';
+  }
+  function renderProg(){
+    var t=todayDay(),h='<h2 class="sec-title">Program pe zile</h2><p class="sec-sub">Ziua 1 este semănatul rucolei și amarantului, ziua 13 este recoltarea. Coloana zilei de azi e marcată cu roșu.</p><div class="scroll"><table>'+head(t)+'<tbody>';
+    PLANTS.forEach(function(p){
+      h+='<tr><td class="pl">'+esc(p.n)+'</td>';
+      for(var d=1;d<=N;d++){var c=code(p,d);h+='<td class="'+(c?"c-"+c:"")+(d===t?" today":"")+'">'+c+'</td>';}
+      h+='</tr>';
+    });
+    h+='</tbody></table></div>'+legend(false);
+    var el=document.getElementById("v-prog");el.innerHTML=h;bindHead(el);
+  }
+  function renderApa(){
+    var t=todayDay(),tot=[],h='<h2 class="sec-title">Cantități de apă</h2><p class="sec-sub">Mililitri pe tavă. „2 × 20” înseamnă 2 pulverizări pe zi, de câte 20 ml.</p><div class="scroll"><table>'+head(t)+'<tbody>';
+    for(var d=1;d<=N;d++)tot[d]=0;
+    PLANTS.forEach(function(p){
+      var a=amounts(p);h+='<tr><td class="pl">'+esc(p.n)+'</td>';
+      for(d=1;d<=N;d++){
+        var c=code(p,d),cell="";
+        if(c==="S"||c==="P"){cell='<span class="sm">'+c+'</span>2×'+a.sp;tot[d]+=2*a.sp;}
+        else if(c==="L"||c==="U"){cell='<span class="sm">'+c+'</span>'+a.wa;tot[d]+=a.wa;}
+        else cell=c;
+        h+='<td class="'+(c?"c-"+c:"")+(d===t?" today":"")+'">'+cell+'</td>';
+      }
+      h+='</tr>';
+    });
+    h+='<tr class="sum"><th class="pl">Total ml / zi</th>';
+    for(d=1;d<=N;d++)h+='<td class="'+(d===t?"today":"")+'">'+tot[d].toLocaleString("ro-RO")+'</td>';
+    h+='</tr></tbody></table></div>'+legend(true);
+    var el=document.getElementById("v-apa");el.innerHTML=h;bindHead(el);
+  }
+  function bindHead(el){Array.prototype.forEach.call(el.querySelectorAll("thead button"),function(b){b.onclick=function(){state.view=+b.dataset.day;showTab("azi");};});}
+
+  /* ---------- Setări ---------- */
+  var armed=false;
+  function renderSet(){
+    var el=document.getElementById("v-set");
+    var h='<h2 class="sec-title">Setări</h2>'+
+      '<div class="card"><h3>Începutul programului</h3><label for="startDate">Data Ziua 1</label><input type="date" id="startDate" value="'+esc(state.start)+'">'+
+      '<p class="fine">Ziua 1 este ziua în care semeni rucola și amarantul. Toate zilele se recalculează după această dată.</p></div>'+
+      '<div class="card"><h3>Cantități de apă (ml pe tavă)</h3><div class="grid2"><span class="h">Plantă</span><span class="h">Pulveriz.</span><span class="h">Udare</span>';
+    PLANTS.forEach(function(p,i){var a=amounts(p);
+      h+='<span class="nm">'+esc(p.n)+'</span><input type="number" inputmode="numeric" min="0" step="5" id="sp'+i+'" value="'+a.sp+'" aria-label="ml pe pulverizare, '+esc(p.n)+'">'+
+         '<input type="number" inputmode="numeric" min="0" step="10" id="wa'+i+'" value="'+a.wa+'" aria-label="ml udare de jos pe zi, '+esc(p.n)+'">';});
+    h+='</div><p class="fine">Pulverizarea este cantitatea pentru o singură pulverizare; se face de 2 ori pe zi. Valorile sunt estimări pentru o tavă de circa 800 cm². Dacă substratul iese prea ud sau prea uscat, ajustează cu 10–20 ml.</p></div>'+
+      '<button class="btn" id="reset">Revino la valorile implicite</button><p class="fine" id="rmsg"></p>'+
+      '<p class="fine">Setările rămân memorate pe acest telefon, în acest browser.</p>';
+    el.innerHTML=h;
+    el.querySelector("#startDate").onchange=function(e){if(e.target.value){state.start=e.target.value;save();refresh();}};
+    PLANTS.forEach(function(p,i){
+      ["sp","wa"].forEach(function(k){
+        el.querySelector("#"+k+i).onchange=function(e){var v=Number(e.target.value);if(!isFinite(v)||v<0)v=p[k];(state.ov[p.n]=state.ov[p.n]||{})[k]=v;e.target.value=v;save();refresh();};
+      });
+    });
+    var rb=el.querySelector("#reset");
+    rb.onclick=function(){
+      if(!armed){armed=true;rb.textContent="Apasă încă o dată pentru a confirma";rb.classList.add("primary");return;}
+      armed=false;state.start=DEF_START;state.ov={};save();refresh();renderSet();
+      document.getElementById("rmsg").textContent="Valorile implicite au fost restabilite.";
+    };
+  }
+
+  /* ---------- Navigare ---------- */
+  function refresh(){renderAzi();renderProg();renderApa();}
+  function showTab(t){
+    state.tab=t;
+    ["azi","prog","apa","set"].forEach(function(k){document.getElementById("v-"+k).hidden=(k!==t);});
+    Array.prototype.forEach.call(document.querySelectorAll("nav button"),function(b){b.setAttribute("aria-selected",String(b.dataset.tab===t));});
+    if(t==="azi")renderAzi();
+    if(t==="set"){armed=false;renderSet();}
+    window.scrollTo(0,0);
+  }
+  Array.prototype.forEach.call(document.querySelectorAll("nav button"),function(b){b.onclick=function(){showTab(b.dataset.tab);};});
+
+  load();
+  (function(){var t=todayDay();state.view=t<1?1:t>N?N:t;})();
+  refresh();
+})();
+</script>
+<script>
+if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){});});}
+</script>
+</body>
+</html>
