@@ -134,13 +134,19 @@ select{appearance:auto}
 .pcard{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;margin-top:12px}
 .pcard.off{opacity:.6}
 .phead{display:flex;gap:10px;align-items:center}
-.phead input[type=text]{flex:1;min-width:0;font-weight:700}
+.phead input[type=text]{flex:1;min-width:0;font-weight:700;background:var(--l-bg);color:var(--l-fg);border-color:var(--l-bg)}
 .pgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
 .pgrid label{font-size:.78rem;color:var(--muted);margin-bottom:4px}
 .pgrid input{text-align:center;height:44px}
 .chk{display:flex;align-items:center;gap:10px;font-weight:500;font-size:.95rem;margin:0;min-height:40px}
 .chk input{width:22px;height:22px;accent-color:var(--accent);flex:0 0 auto}
 .checks{display:flex;flex-wrap:wrap;gap:4px 18px;margin-top:8px}
+.manual{margin-top:14px;padding-top:12px;border-top:1px dashed var(--line)}
+.manual .mh{font-weight:700;font-size:.9rem}
+.manual .mh span{font-weight:500;color:var(--muted);font-size:.8rem}
+.pgrid.p3{grid-template-columns:1fr;gap:8px;margin-top:8px}
+.pgrid.p3 label{font-size:.8rem}
+.pgrid.p3 input{text-align:left;padding:0 12px}
 .plist-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-top:22px}
 .plist-head h3{font-size:1.1rem}
 .plist-head span{color:var(--muted);font-size:.85rem}
@@ -160,7 +166,7 @@ select{appearance:auto}
 .prow .est{margin-left:auto;font-weight:700;font-variant-numeric:tabular-nums}
 .mixrow{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px}
 .mixrow .lab{font-weight:600}
-.seg{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--soft);padding:4px;border-radius:12px}
+.seg{margin-bottom:10px;display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--soft);padding:4px;border-radius:12px}
 .seg button{height:46px;border:0;border-radius:9px;background:none;font-weight:600;font-size:.85rem;color:var(--muted);padding:0 6px;line-height:1.2}
 .seg button[aria-pressed="true"]{background:var(--surface);color:var(--fg);box-shadow:0 0 0 1px var(--line)}
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
@@ -174,7 +180,7 @@ table.rt th.pl,table.rt td.pl{min-width:92px;max-width:104px;padding:0 8px;line-
 table.rt .dim{opacity:.4}
 table.rt td.warn{color:var(--today);font-weight:700}
 /* bottom nav */
-nav{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);
+nav{position:fixed;z-index:20;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);
   display:grid;grid-template-columns:repeat(5,1fr);gap:4px;
   padding:8px max(16px,env(safe-area-inset-right,0px)) calc(8px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
 nav button{border:0;background:none;border-radius:12px;height:52px;font-weight:600;font-size:.76rem;padding:0;color:var(--muted);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
@@ -239,7 +245,7 @@ nav button[aria-selected="true"]{color:var(--accent);background:var(--soft)}
     {name:"Busuioc",grow:14,dark:3,soak:false,weight:false,sp:15,wa:70,yg:90},
     {name:"Coriandru",grow:15,dark:5,soak:false,weight:false,sp:20,wa:90,yg:100}
   ];
-  var state={start:DEF_START,plants:[],mix:{c60:0,c100:0,mode:"prop"},view:1,tab:"azi",armedDel:null,armedReset:false,armedClear:false,toast:""};
+  var state={progMode:"real",shift:0,start:DEF_START,plants:[],mix:{c60:0,c100:0,mode:"prop"},view:1,tab:"azi",armedDel:null,armedReset:false,armedClear:false,toast:""};
 
   function newId(){return"p"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
   function toInt(v,d,min,max){v=Math.round(Number(v));if(!isFinite(v))v=d;return Math.max(min,Math.min(max,v));}
@@ -250,8 +256,11 @@ nav button[aria-selected="true"]{color:var(--accent);background:var(--soft)}
       name:(String(p.name==null?"":p.name).trim().slice(0,40))||"Plantă nouă",
       grow:g,dark:toInt(p.dark,3,0,Math.max(0,g-2)),soak:!!p.soak,weight:!!p.weight,
       sp:toInt(p.sp,20,0,1000),wa:toInt(p.wa,90,0,2000),on:p.on!==false,
-      trays:toInt(p.trays,0,0,99),yg:toInt(p.yg,150,0,3000),mix:p.mix!==false};
+      trays:toInt(p.trays,0,0,99),yg:toInt(p.yg,150,0,3000),mix:p.mix!==false,
+      sowDate:validDate(p.sowDate),lightDate:validDate(p.lightDate)};
   }
+  function pad2(n){return(n<10?"0":"")+n;}
+  function addDays(str,n){var m=str.split("-").map(Number),d=new Date(m[0],m[1]-1,m[2]+n);return d.getFullYear()+"-"+pad2(d.getMonth()+1)+"-"+pad2(d.getDate());}
   function cleanMix(m){m=m||{};return{c60:toInt(m.c60,0,0,99),c100:toInt(m.c100,0,0,99),mode:m.mode==="egal"?"egal":"prop"};}
   function validDate(s){return(typeof s==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(s)&&!isNaN(new Date(s+"T00:00:00")))?s:null;}
   function defaults(){return DEFAULTS.map(clean);}
@@ -259,7 +268,11 @@ nav button[aria-selected="true"]{color:var(--accent);background:var(--soft)}
     var got=false;
     try{
       var s=JSON.parse(localStorage.getItem(KEY)||"null");
-      if(s&&Array.isArray(s.plants)){state.start=validDate(s.start)||DEF_START;state.plants=s.plants.map(clean).filter(Boolean);state.mix=cleanMix(s.mix);got=true;}
+      if(s&&Array.isArray(s.plants)){state.start=validDate(s.start)||DEF_START;
+        s.plants.forEach(function(q){if(!q)return;
+          if(q.sowDay>0&&!q.sowDate)q.sowDate=addDays(state.start,q.sowDay-1);
+          if(q.lightDay>0&&!q.lightDate)q.lightDate=addDays(state.start,q.lightDay-1);});
+        state.plants=s.plants.map(clean).filter(Boolean);state.mix=cleanMix(s.mix);got=true;}
       else{
         var o=JSON.parse(localStorage.getItem(OLD)||"null");
         if(o){
@@ -277,24 +290,42 @@ nav button[aria-selected="true"]{color:var(--accent);background:var(--soft)}
   /* ---------- programul calculat ---------- */
   /* Planta cu creșterea cea mai lungă se seamănă în ziua 1; toate ajung la recoltare în aceeași zi (ultima).
      Dacă planta cea mai lungă se înmoaie, programul începe cu ziua de înmuiere. */
-  function sched(){
+  function sched(sync){
     var act=state.plants.filter(function(p){return p.on;});
-    if(!act.length)return{N:0,rows:[],longest:[]};
+    if(!act.length){if(!sync)state.shift=0;return{N:0,rows:[],longest:[]};}
     var maxG=Math.max.apply(null,act.map(function(p){return p.grow;}));
     var off=act.some(function(p){return p.soak&&p.grow===maxG;})?1:0;
     var H=maxG+1+off;
-    var rows=act.map(function(p){
-      var sow=H-p.grow,codes={};
-      if(p.soak)codes[sow-1]="Î";
-      codes[sow]="S";
-      for(var d=sow+1;d<H;d++)codes[d]=d<=sow+p.dark?"P":(d===sow+p.dark+1?"L":"U");
-      codes[H]="R";
-      return{p:p,sow:sow,codes:codes};
+    /* zilele automate (asow, alight, aharv) pot fi înlocuite pe fiecare plantă cu date alese manual.
+       Numărătoarea zilelor pornește de la data de start; dacă o plantă a fost semănată mai devreme,
+       numărătoarea se mută înapoi (state.shift) ca toate zilele să rămână pozitive. */
+    var raw=act.map(function(p){
+      var asow=H-p.grow,alight=asow+p.dark+1,aharv=H;
+      var sd=sync?null:p.sowDate,ld=sync?null:p.lightDate;
+      var sow=sd?relDay(sd):asow;
+      var harv=Math.max(sd?sow+p.grow:aharv,sow+1);
+      var light=Math.min(Math.max(ld?relDay(ld):(sd?sow+p.dark+1:alight),sow+1),Math.max(sow+1,harv-1));
+      return{p:p,sow:sow,light:light,harv:harv,asow:asow,alight:alight,aharv:aharv};
     });
-    return{N:H,rows:rows,longest:act.filter(function(p){return p.grow===maxG;}).map(function(p){return p.name;})};
+    var first=Math.min.apply(null,raw.map(function(r){return r.p.soak?r.sow-1:r.sow;}));
+    var shift=first<1?1-first:0;if(!sync)state.shift=shift;
+    var rows=raw.map(function(r){
+      ["sow","light","harv","asow","alight","aharv"].forEach(function(k){r[k]+=shift;});
+      var p=r.p,codes={};
+      if(p.soak&&r.sow-1>=1)codes[r.sow-1]="Î";
+      codes[r.sow]="S";
+      for(var d=r.sow+1;d<r.harv;d++)codes[d]=d<r.light?"P":(d===r.light?"L":"U");
+      codes[r.harv]="R";
+      r.codes=codes;return r;
+    });
+    var N=Math.max.apply(null,rows.map(function(r){return r.harv;}));
+    return{N:N,rows:rows,same:rows.every(function(r){return r.harv===rows[0].harv;}),longest:act.filter(function(p){return p.grow===maxG;}).map(function(p){return p.name;})};
   }
   function ml(p,c){return(c==="S"||c==="P")?2*p.sp:(c==="L"||c==="U")?p.wa:0;}
-  function startDate(){var m=state.start.split("-").map(Number);return new Date(m[0],m[1]-1,m[2]);}
+  function rawStart(){var m=state.start.split("-").map(Number);return new Date(m[0],m[1]-1,m[2]);}
+  function startDate(){var s=rawStart();return new Date(s.getFullYear(),s.getMonth(),s.getDate()-(state.shift||0));}
+  function relDay(str){var m=str.split("-").map(Number),a=new Date(m[0],m[1]-1,m[2]),s=rawStart();return Math.round((a-s)/864e5)+1;}
+  function resetView(){var SC=sched(),t=todayDay();state.view=SC.N?(t<1?1:t>SC.N?SC.N:t):1;}
   function dayDate(d){var s=startDate();return new Date(s.getFullYear(),s.getMonth(),s.getDate()+d-1);}
   function todayDay(){var t=new Date(),a=new Date(t.getFullYear(),t.getMonth(),t.getDate()),s=startDate();return Math.round((a-s)/864e5)+1;}
   var fLong=new Intl.DateTimeFormat("ro-RO",{weekday:"long",day:"numeric",month:"long"});
@@ -320,8 +351,11 @@ nav button[aria-selected="true"]{color:var(--accent);background:var(--soft)}
     h+='</div>';
     if(t<1)h+='<div class="notice">Programul începe pe '+esc(fLong.format(dayDate(1)))+' (peste '+(1-t)+' '+(1-t===1?"zi":"zile")+').</div>';
     else if(t>N)h+='<div class="notice">Programul s-a încheiat. Schimbi data de start din Setări pentru un nou ciclu.</div>';
-    if(d===N-1&&N>=3)h+='<div class="notice warn">Ultima udare: doar dimineața. Mâine recoltezi.</div>';
-    if(d===N)h+='<div class="notice warn">Zi de recoltare: nu mai uzi, tai dimineața.</div>';
+    var tomR=[],todR=[],nextR={};
+    SC.rows.forEach(function(r){if(r.codes[d+1]==="R"){tomR.push(r.p.name);nextR[r.p.id]=1;}if(r.codes[d]==="R")todR.push(r.p.name);});
+    var who=function(a){return a.length===SC.rows.length&&a.length>1?"toate plantele":a.join(", ");};
+    if(tomR.length)h+='<div class="notice warn">Mâine recoltezi: '+esc(who(tomR))+'. Ultima udare la ele: doar dimineața.</div>';
+    if(todR.length)h+='<div class="notice warn">Zi de recoltare: '+esc(who(todR))+'. Nu mai uzi, tai dimineața.</div>';
 
     var groups={},sp=0,wa=0;
     SC.rows.forEach(function(r){var c=r.codes[d];if(!c)return;(groups[c]=groups[c]||[]).push(r.p);var m=ml(r.p,c);if(c==="S"||c==="P")sp+=m;else wa+=m;});
@@ -334,7 +368,7 @@ nav button[aria-selected="true"]{color:var(--accent);background:var(--soft)}
         if(c==="S"||c==="P")amt="2 × "+p.sp+" ml";else if(c==="L"||c==="U")amt=p.wa+" ml";
         if(c==="S"&&p.weight)note="Pune 1–2 kg peste tavă.";
         if(c==="Î")note="Seara, pentru semănat mâine.";
-        if(c==="U"&&d===N-1)note="Doar dimineața.";
+        if(c==="U"&&nextR[p.id])note="Doar dimineața.";
         var tr=p.trays>0?trTxt(p.trays):"";
         if(tr&&(c==="S"||c==="Î"))note=tr+(note?" · "+note:"");
         if(c==="R"&&tr)note=tr+(p.yg>0?" ≈ "+fmtG(p.trays*p.yg):"");
@@ -368,22 +402,33 @@ nav button[aria-selected="true"]{color:var(--accent);background:var(--soft)}
     return '<div class="legend">'+items.map(function(i){return'<div><span class="badge c-'+i[0]+'">'+i[0]+'</span><span>'+i[1]+'</span></div>';}).join("")+'</div>';
   }
   function emptyMsg(){return'<p class="empty">Nu ai nicio plantă în program.<br>Adaugă sau activează plante în Setări.</p>';}
-  function renderProg(){
-    var SC=sched(),el=$("v-prog");
+  /* comutator: programul meu (după datele de semănat introduse) / recoltare odată (programul recomandat) */
+  function modeSwitch(){
+    var m=state.progMode;
+    return '<div class="seg" role="group" aria-label="Ce program vezi"><button data-pm="real" aria-pressed="'+(m==="real")+'">Programul meu</button>'+
+      '<button data-pm="sync" aria-pressed="'+(m==="sync")+'">Recoltare odată</button></div>'+
+      (m==="sync"?'<p class="fine">Așa ar trebui să semeni ca toate plantele să se recolteze în aceeași zi. Ignoră datele de semănat introduse; Ziua 1 este data de start din Setări. Azi și Recoltă rămân pe programul tău.</p>':'');
+  }
+  function bindMode(el){Array.prototype.forEach.call(el.querySelectorAll("[data-pm]"),function(b){b.onclick=function(){state.progMode=b.dataset.pm;renderProg();renderApa();};});}
+  function inMode(fn){var keep=state.shift;if(state.progMode==="sync")state.shift=0;try{fn(state.progMode==="sync");}finally{state.shift=keep;}}
+  function renderProg(){inMode(renderProgIn);}
+  function renderApa(){inMode(renderApaIn);}
+  function renderProgIn(sync){
+    var SC=sched(sync),el=$("v-prog");
     if(!SC.N){el.innerHTML='<h2 class="sec-title">Program pe zile</h2>'+emptyMsg();return;}
-    var t=todayDay(),h='<h2 class="sec-title">Program pe zile</h2><p class="sec-sub">Ziua 1 este semănatul pentru '+esc(SC.longest.join(", "))+', iar ziua '+SC.N+' este recoltarea tuturor. Coloana zilei de azi e marcată cu roșu.</p><div class="scroll"><table>'+head(SC.N,t)+'<tbody>';
+    var t=todayDay(),h='<h2 class="sec-title">Program pe zile</h2>'+modeSwitch()+'<p class="sec-sub">'+(SC.same?'Toate plantele se recoltează în ziua '+SC.N+'.':'Plantele se recoltează în zile diferite (R în tabel).')+' Coloana zilei de azi e marcată cu roșu.</p><div class="scroll"><table>'+head(SC.N,t)+'<tbody>';
     SC.rows.forEach(function(r){
       h+='<tr><td class="pl">'+esc(r.p.name)+'</td>';
       for(var d=1;d<=SC.N;d++){var c=r.codes[d]||"";h+='<td class="'+(c?"c-"+c:"")+(d===t?" today":"")+'">'+c+'</td>';}
       h+='</tr>';
     });
     h+='</tbody></table></div>'+legend(false);
-    el.innerHTML=h;bindHead(el);
+    el.innerHTML=h;bindHead(el,sync);bindMode(el);
   }
-  function renderApa(){
-    var SC=sched(),el=$("v-apa");
+  function renderApaIn(sync){
+    var SC=sched(sync),el=$("v-apa");
     if(!SC.N){el.innerHTML='<h2 class="sec-title">Cantități de apă</h2>'+emptyMsg();return;}
-    var t=todayDay(),tot=[],h='<h2 class="sec-title">Cantități de apă</h2><p class="sec-sub">Mililitri pe tavă. „2 × 20” înseamnă 2 pulverizări pe zi, de câte 20 ml.</p><div class="scroll"><table>'+head(SC.N,t)+'<tbody>';
+    var t=todayDay(),tot=[],h='<h2 class="sec-title">Cantități de apă</h2>'+modeSwitch()+'<p class="sec-sub">Mililitri pe tavă. „2 × 20” înseamnă 2 pulverizări pe zi, de câte 20 ml.</p><div class="scroll"><table>'+head(SC.N,t)+'<tbody>';
     for(var d=1;d<=SC.N;d++)tot[d]=0;
     SC.rows.forEach(function(r){
       var p=r.p;h+='<tr><td class="pl">'+esc(p.name)+'</td>';
@@ -399,9 +444,9 @@ nav button[aria-selected="true"]{color:var(--accent);background:var(--soft)}
     h+='<tr class="sum"><th class="pl">Total ml / zi</th>';
     for(d=1;d<=SC.N;d++)h+='<td class="'+(d===t?"today":"")+'">'+tot[d].toLocaleString("ro-RO")+'</td>';
     h+='</tr></tbody></table></div>'+legend(true);
-    el.innerHTML=h;bindHead(el);
+    el.innerHTML=h;bindHead(el,sync);bindMode(el);
   }
-  function bindHead(el){Array.prototype.forEach.call(el.querySelectorAll("thead button"),function(b){b.onclick=function(){state.view=+b.dataset.day;showTab("azi");};});}
+  function bindHead(el,sync){if(sync)return;Array.prototype.forEach.call(el.querySelectorAll("thead button"),function(b){b.onclick=function(){state.view=+b.dataset.day;showTab("azi");};});}
 
   /* ---------- Recoltă + mix ---------- */
   function allocate(fr,size){
@@ -448,7 +493,7 @@ nav button[aria-selected="true"]{color:var(--accent);background:var(--soft)}
     var el=$("v-rec"),SC=sched(),h='<h2 class="sec-title">Recoltă și mix</h2>';
     if(!SC.N){el.innerHTML=h+emptyMsg();return;}
     var R=calcRec(),m=state.mix;
-    h+='<p class="sec-sub">Recoltare: ziua '+SC.N+' ('+esc(fLong.format(dayDate(SC.N)))+'). Pune câte tăvițe ai semănat din fiecare plantă.</p>';
+    h+='<p class="sec-sub">'+(SC.same?'Recoltare':'Ultima recoltare')+': ziua '+SC.N+' ('+esc(fLong.format(dayDate(SC.N)))+'). Pune câte tăvițe ai semănat din fiecare plantă.</p>';
     h+='<div class="prows">';
     R.items.forEach(function(x){
       var p=x.p;
@@ -538,6 +583,12 @@ nav button[aria-selected="true"]{color:var(--accent);background:var(--soft)}
       '</div>'+
       '<div class="checks"><label class="chk"><input type="checkbox" id="so'+i+'"'+(p.soak?" checked":"")+'>Înmoi semințele</label>'+
       '<label class="chk"><input type="checkbox" id="wt'+i+'"'+(p.weight?" checked":"")+'>Greutate peste tavă</label></div>'+
+      '<div class="manual"><div class="mh">Date <span>(lasă gol = automat)</span></div>'+
+        '<div class="pgrid p3">'+
+          '<div><label for="sd'+i+'">Data semănatului (o alegi tu)</label><input type="date" id="sd'+i+'" value="'+(p.sowDate||"")+'"></div>'+
+          '<div><label for="ld'+i+'">Scoaterea la lumină (automată, o poți schimba)</label><input type="date" id="ld'+i+'" value="'+(p.lightDate||"")+'"></div>'+
+        '</div><p class="fine" id="eff'+i+'"></p>'+
+        '<button class="btn" id="rs'+i+'" style="height:40px;margin-top:4px">Pune totul pe automat</button></div>'+
       '<button class="btn danger'+(state.armedDel===p.id?" armed":"")+'" id="del'+i+'">'+(state.armedDel===p.id?"Apasă încă o dată pentru a șterge":"Șterge planta")+'</button>'+
     '</div>';
   }
@@ -547,7 +598,7 @@ nav button[aria-selected="true"]{color:var(--accent);background:var(--soft)}
       '<div class="card"><h3>Începutul programului</h3><label for="startDate">Data Ziua 1</label><input type="date" id="startDate" value="'+esc(state.start)+'">'+
       '<p class="fine">Ziua 1 este ziua în care semeni planta care crește cel mai mult. Toate zilele se recalculează după această dată.</p></div>'+
       '<div class="plist-head"><h3>Plantele tale</h3><span>'+n+' din '+state.plants.length+' în program</span></div>'+
-      '<p class="fine">Bifează „În program” doar pentru plantele pe care le semeni acum. Programul se aranjează singur ca toate să se recolteze în aceeași zi.</p>';
+      '<p class="fine">Bifează „În program” doar pentru plantele pe care le semeni acum. Programul se aranjează singur ca toate să se recolteze în aceeași zi, dar la fiecare plantă poți introduce data semănatului. Scoaterea la lumină și recolta se calculează din ea, iar data luminii o poți schimba.</p>';
     state.plants.forEach(function(p,i){h+=plantCard(p,i);});
     h+='<div class="card" id="addCard"><h3>Adaugă o plantă</h3><label for="preset">Alege din listă sau pornești de la zero</label>'+
       '<select id="preset"><option value="-1">Plantă nouă, completez eu valorile</option>'+
@@ -557,8 +608,9 @@ nav button[aria-selected="true"]{color:var(--accent);background:var(--soft)}
       '<button class="btn danger full'+(state.armedReset?" armed":"")+'" id="reset">'+(state.armedReset?"Apasă încă o dată pentru a confirma":"Revino la lista și valorile implicite")+'</button>'+
       '<p class="fine">Setările rămân memorate pe acest telefon, în acest browser.</p>';
     el.innerHTML=h;
-    $("startDate").onchange=function(e){var v=validDate(e.target.value);if(v){state.start=v;save();refresh();}};
+    $("startDate").onchange=function(e){var v=validDate(e.target.value);if(v){state.start=v;save();resetView();refresh();syncAuto();}};
     state.plants.forEach(function(p,i){bindCard(p,i);});
+    syncAuto();
     $("add").onclick=function(){
       var k=+$("preset").value,base=k>=0?PRESETS[k]:{name:"Plantă nouă",grow:9,dark:3,soak:false,weight:false,sp:20,wa:90};
       var np=clean(Object.assign({},base,{id:newId(),on:true}));
@@ -573,16 +625,26 @@ nav button[aria-selected="true"]{color:var(--accent);background:var(--soft)}
       state.armedReset=false;state.armedDel=null;state.start=DEF_START;state.plants=defaults();state.mix=cleanMix();state.toast="Lista și valorile implicite au fost restabilite.";save();refresh();renderSet();
     };
   }
+  /* arată zilele efective și valorile automate (placeholder) pentru toate plantele */
+  function syncAuto(){
+    var SC=sched(),f=function(d){return fShort.format(dayDate(d));};
+    state.plants.forEach(function(p,i){
+      var r=null;for(var k=0;k<SC.rows.length;k++)if(SC.rows[k].p.id===p.id)r=SC.rows[k];
+      var e=$("eff"+i);
+      if(e)e.innerHTML=r?"Acum: semănat "+f(r.sow)+" · lumină "+f(r.light)+" · recoltă "+f(r.harv)+" (zilele "+r.sow+", "+r.light+", "+r.harv+")<br>Automat: semănat "+f(r.asow)+" · lumină "+f(r.alight)+" · recoltă "+f(r.aharv):"Planta nu e în program.";
+    });
+  }
   function syncCard(p,i){
     var set=function(id,v){var e=$(id+i);if(e&&e!==document.activeElement)e.value=v;else if(e)e.value=v;};
     set("nm",p.name);set("gr",p.grow);set("dk",p.dark);set("sp",p.sp);set("wa",p.wa);
+    set("sd",p.sowDate||"");set("ld",p.lightDate||"");
     var c=$("card"+i);if(c)c.classList.toggle("off",!p.on);
   }
   function bindCard(p,i){
     function upd(patch){
       var cur=state.plants[i];if(!cur)return;
       var np=clean(Object.assign({},cur,patch));
-      state.plants[i]=np;save();syncCard(np,i);refresh();
+      state.plants[i]=np;save();syncCard(np,i);resetView();refresh();syncAuto();
       var cnt=document.querySelector(".plist-head span");if(cnt)cnt.textContent=state.plants.filter(function(x){return x.on;}).length+" din "+state.plants.length+" în program";
     }
     $("nm"+i).onchange=function(e){upd({name:e.target.value});};
@@ -591,6 +653,9 @@ nav button[aria-selected="true"]{color:var(--accent);background:var(--soft)}
     $("dk"+i).onchange=function(e){upd({dark:e.target.value});};
     $("sp"+i).onchange=function(e){upd({sp:e.target.value});};
     $("wa"+i).onchange=function(e){upd({wa:e.target.value});};
+    $("sd"+i).onchange=function(e){upd({sowDate:e.target.value});};
+    $("ld"+i).onchange=function(e){upd({lightDate:e.target.value});};
+    $("rs"+i).onclick=function(){upd({sowDate:null,lightDate:null});};
     $("so"+i).onchange=function(e){upd({soak:e.target.checked});};
     $("wt"+i).onchange=function(e){upd({weight:e.target.checked});};
     $("del"+i).onclick=function(){
@@ -614,7 +679,7 @@ nav button[aria-selected="true"]{color:var(--accent);background:var(--soft)}
 
   load();
   bindRec();
-  (function(){var SC=sched(),t=todayDay();state.view=SC.N?(t<1?1:t>SC.N?SC.N:t):1;})();
+  resetView();
   refresh();
 })();
 </script>
