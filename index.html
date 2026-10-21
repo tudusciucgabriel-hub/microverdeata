@@ -190,11 +190,10 @@ nav button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width
 nav button[aria-selected="true"]{color:var(--accent);background:var(--soft)}
 @media (prefers-reduced-motion:no-preference){.rows li,.hero{transition:background .15s}}
 </style>
-
 </head>
 <body>
 <main>
-  <div class="top"><h1>Microverdeață</h1><span class="tray">tavă 24,5 × 32,5 cm</span></div>
+  <div class="top"><h1>Microverdeață</h1><span class="tray">tavă 30,5 × 22,5 cm</span></div>
   <section id="v-azi"></section>
   <section id="v-prog" hidden></section>
   <section id="v-apa" hidden></section>
@@ -221,31 +220,31 @@ nav button[aria-selected="true"]{color:var(--accent);background:var(--soft)}
   /* zile = zile până la recoltare; dark = zile în întuneric; sp = ml per pulverizare; wa = ml udare de jos pe zi;
      yg = grame recoltate dintr-o tavă (estimare orientativă, se corectează după cântărire) */
   var DEFAULTS=[
-    {name:"Rucola",grow:12,dark:4,soak:false,weight:false,sp:20,wa:80,yg:75},
-    {name:"Amarant",grow:12,dark:4,soak:false,weight:false,sp:15,wa:70,yg:50},
-    {name:"Pak Choi",grow:10,dark:3,soak:false,weight:false,sp:20,wa:90,yg:85},
-    {name:"Mazăre",grow:10,dark:4,soak:true,weight:true,sp:30,wa:200,yg:150},
-    {name:"Fasole și Mazăre",grow:10,dark:4,soak:true,weight:true,sp:30,wa:200,yg:150},
-    {name:"Broccoli",grow:9,dark:3,soak:false,weight:false,sp:20,wa:90,yg:75},
-    {name:"Gulie Kohlrabi",grow:9,dark:3,soak:false,weight:false,sp:20,wa:90,yg:80},
-    {name:"Varză Albă",grow:9,dark:3,soak:false,weight:false,sp:20,wa:90,yg:80},
-    {name:"Muștar",grow:8,dark:3,soak:false,weight:false,sp:20,wa:80,yg:90},
-    {name:"Ridiche Daikon",grow:7,dark:3,soak:false,weight:false,sp:20,wa:90,yg:100},
-    {name:"Ridiche Purpurie",grow:7,dark:3,soak:false,weight:false,sp:20,wa:90,yg:95},
-    {name:"Fasole Mung",grow:6,dark:4,soak:true,weight:false,sp:30,wa:200,yg:200}
+    {name:"Rucola",grow:12,dark:4,soak:false,weight:false,sp:17,wa:70,yg:75,seed:8},
+    {name:"Amarant",grow:12,dark:4,soak:false,weight:false,sp:13,wa:60,yg:50,seed:4},
+    {name:"Pak Choi",grow:10,dark:3,soak:false,weight:false,sp:17,wa:80,yg:85,seed:10},
+    {name:"Mazăre",grow:10,dark:4,soak:true,weight:true,sp:26,wa:170,yg:150,seed:150},
+    {name:"Fasole și Mazăre",grow:10,dark:4,soak:true,weight:true,sp:26,wa:170,yg:150,seed:150},
+    {name:"Broccoli",grow:9,dark:3,soak:false,weight:false,sp:17,wa:80,yg:75,seed:13},
+    {name:"Gulie Kohlrabi",grow:9,dark:3,soak:false,weight:false,sp:17,wa:80,yg:80,seed:14},
+    {name:"Varză Albă",grow:9,dark:3,soak:false,weight:false,sp:17,wa:80,yg:80,seed:13},
+    {name:"Floarea-soarelui",grow:9,dark:3,soak:true,weight:false,sp:26,wa:130,yg:150,seed:90},
+    {name:"Muștar",grow:8,dark:3,soak:false,weight:false,sp:17,wa:70,yg:90,seed:14},
+    {name:"Ridiche Daikon",grow:7,dark:3,soak:false,weight:false,sp:17,wa:80,yg:100,seed:15},
+    {name:"Ridiche Purpurie",grow:7,dark:3,soak:false,weight:false,sp:17,wa:80,yg:95,seed:15},
+    {name:"Fasole Mung",grow:6,dark:4,soak:true,weight:false,sp:26,wa:170,yg:200,seed:90}
   ];
   /* valori orientative pentru plante frecvente; se pot edita după adăugare */
   var EXTRA=[
-    {name:"Floarea-soarelui",grow:9,dark:3,soak:true,weight:false,sp:30,wa:150,yg:150},
-    {name:"Hrișcă",grow:9,dark:3,soak:true,weight:false,sp:25,wa:110,yg:125},
-    {name:"Sfeclă roșie",grow:11,dark:4,soak:true,weight:false,sp:20,wa:100,yg:60},
-    {name:"Varză roșie",grow:9,dark:3,soak:false,weight:false,sp:20,wa:90,yg:80},
-    {name:"Creson",grow:7,dark:2,soak:false,weight:false,sp:15,wa:70,yg:85},
-    {name:"Lucernă",grow:8,dark:3,soak:false,weight:false,sp:15,wa:70,yg:75},
-    {name:"Linte",grow:7,dark:3,soak:true,weight:false,sp:25,wa:120,yg:125},
-    {name:"Năut",grow:7,dark:3,soak:true,weight:false,sp:30,wa:150,yg:150},
-    {name:"Busuioc",grow:14,dark:3,soak:false,weight:false,sp:15,wa:70,yg:45},
-    {name:"Coriandru",grow:15,dark:5,soak:false,weight:false,sp:20,wa:90,yg:50}
+    {name:"Hrișcă",grow:9,dark:3,soak:true,weight:false,sp:22,wa:95,yg:125,seed:80},
+    {name:"Sfeclă roșie",grow:11,dark:4,soak:true,weight:false,sp:17,wa:85,yg:60,seed:25},
+    {name:"Varză roșie",grow:9,dark:3,soak:false,weight:false,sp:17,wa:80,yg:80,seed:13},
+    {name:"Creson",grow:7,dark:2,soak:false,weight:false,sp:13,wa:60,yg:85,seed:20},
+    {name:"Lucernă",grow:8,dark:3,soak:false,weight:false,sp:13,wa:60,yg:75,seed:14},
+    {name:"Linte",grow:7,dark:3,soak:true,weight:false,sp:22,wa:105,yg:125,seed:85},
+    {name:"Năut",grow:7,dark:3,soak:true,weight:false,sp:26,wa:130,yg:150,seed:150},
+    {name:"Busuioc",grow:14,dark:3,soak:false,weight:false,sp:13,wa:60,yg:45,seed:6},
+    {name:"Coriandru",grow:15,dark:5,soak:false,weight:false,sp:17,wa:80,yg:50,seed:25}
   ];
   /* lista de adăugare conține și cele 12 plante din lista de pornire, ca să le poți readăuga dacă le ștergi */
   var PRESETS=DEFAULTS.concat(EXTRA);
@@ -279,11 +278,13 @@ nav button[aria-selected="true"]{color:var(--accent);background:var(--soft)}
       name:(String(p.name==null?"":p.name).trim().slice(0,40))||"Plantă nouă",
       grow:g,dark:toInt(p.dark,3,0,Math.max(0,g-2)),soak:!!p.soak,weight:!!p.weight,
       sp:toInt(p.sp,20,0,1000),wa:toInt(p.wa,90,0,2000),on:p.on!==false,
-      trays:toInt(p.trays,0,0,99),yg:toInt(p.yg,150,0,3000),mix:p.mix!==false,
+      trays:toInt(p.trays,0,0,99),yg:toInt(p.yg,150,0,3000),mix:p.mix!==false,seed:p.seed==null?seedDef(p.name):toInt(p.seed,15,0,2000),
       sowDate:validDate(p.sowDate),lightDate:validDate(p.lightDate)};
   }
   function pad2(n){return(n<10?"0":"")+n;}
   function addDays(str,n){var m=str.split("-").map(Number),d=new Date(m[0],m[1]-1,m[2]+n);return d.getFullYear()+"-"+pad2(d.getMonth()+1)+"-"+pad2(d.getDate());}
+  /* semințe uscate necesare pentru o tavă (g); valori orientative, se pot schimba pe cardul plantei */
+  function seedDef(name){var n=String(name).toLowerCase(),all=DEFAULTS.concat(EXTRA);for(var i=0;i<all.length;i++)if(all[i].name.toLowerCase()===n)return all[i].seed;return 15;}
   function cleanMix(m){m=m||{};return{c60:toInt(m.c60,0,0,99),c100:toInt(m.c100,0,0,99),mode:m.mode==="egal"?"egal":"prop"};}
   function validDate(s){return(typeof s==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(s)&&!isNaN(new Date(s+"T00:00:00")))?s:null;}
   function defaults(){return DEFAULTS.map(clean);}
@@ -295,7 +296,7 @@ nav button[aria-selected="true"]{color:var(--accent);background:var(--soft)}
         s.plants.forEach(function(q){if(!q)return;
           if(q.sowDay>0&&!q.sowDate)q.sowDate=addDays(state.start,q.sowDay-1);
           if(q.lightDay>0&&!q.lightDate)q.lightDate=addDays(state.start,q.lightDay-1);});
-        state.plants=s.plants.map(clean).filter(Boolean);state.mix=cleanMix(s.mix);state.recipes=cleanRecipes(s.recipes);if(!(s.ver>=3)){migrateYg();save();}got=true;}
+        state.plants=s.plants.map(clean).filter(Boolean);state.mix=cleanMix(s.mix);state.recipes=cleanRecipes(s.recipes);if(!(s.ver>=3))migrateYg();if(!(s.ver>=4))addSunflower();if(!(s.ver>=5)){migrateMl();save();}got=true;}
       else{
         var o=JSON.parse(localStorage.getItem(OLD)||"null");
         if(o){
@@ -309,9 +310,20 @@ nav button[aria-selected="true"]{color:var(--accent);background:var(--soft)}
     if(!got)state.plants=defaults();
   }
   /* versiunea 3: randamentele implicite (g / tavă) au fost reduse de două ori; schimb doar valorile rămase la vechiul implicit */
+  /* versiunea 5: tava de 30,5 × 22,5 cm (686 cm²); cantitățile de apă implicite se scad proporțional cu suprafața, doar dacă nu ai schimbat valoarea */
+  var ML_OLD={"Rucola":[20,80],"Amarant":[15,70],"Pak Choi":[20,90],"Mazăre":[30,200],"Fasole și Mazăre":[30,200],"Broccoli":[20,90],"Gulie Kohlrabi":[20,90],"Varză Albă":[20,90],"Floarea-soarelui":[30,150],"Muștar":[20,80],"Ridiche Daikon":[20,90],"Ridiche Purpurie":[20,90],"Fasole Mung":[30,200],"Hrișcă":[25,110],"Sfeclă roșie":[20,100],"Varză roșie":[20,90],"Creson":[15,70],"Lucernă":[15,70],"Linte":[25,120],"Năut":[30,150],"Busuioc":[15,70],"Coriandru":[20,90]};
+  function migrateMl(){var nw={};DEFAULTS.concat(PRESETS).forEach(function(d){nw[d.name]=d;});state.plants.forEach(function(p){var o=ML_OLD[p.name],n=nw[p.name];if(!o||!n)return;if(p.sp===o[0])p.sp=n.sp;if(p.wa===o[1])p.wa=n.wa;});}
   var YG_OLD={"Rucola":[150,100],"Amarant":[100,70],"Pak Choi":[170,120],"Mazăre":[300,220],"Fasole și Mazăre":[300,220],"Broccoli":[150,100],"Gulie Kohlrabi":[160,110],"Varză Albă":[160,110],"Muștar":[180,120],"Ridiche Daikon":[200,140],"Ridiche Purpurie":[190,130],"Fasole Mung":[400,300],"Floarea-soarelui":[300,220],"Hrișcă":[250,180],"Sfeclă roșie":[120,90],"Varză roșie":[160,110],"Creson":[170,120],"Lucernă":[150,100],"Linte":[250,180],"Năut":[300,220],"Busuioc":[90,60],"Coriandru":[100,70]};
   function migrateYg(){var nw={};DEFAULTS.concat(PRESETS).forEach(function(d){nw[d.name]=d.yg;});state.plants.forEach(function(p){var o=YG_OLD[p.name];if(o&&o.indexOf(p.yg)>=0&&nw[p.name])p.yg=nw[p.name];});}
-  function save(){try{localStorage.setItem(KEY,JSON.stringify({ver:3,start:state.start,plants:state.plants,mix:state.mix,recipes:state.recipes}));}catch(e){}}
+  /* versiunea 4: floarea-soarelui face parte din lista de pornire; o adaug o singură dată în listele deja salvate */
+  function addSunflower(){
+    for(var i=0;i<state.plants.length;i++)if(state.plants[i].name.toLowerCase()==="floarea-soarelui")return;
+    var d=null;for(var k=0;k<DEFAULTS.length;k++)if(DEFAULTS[k].name==="Floarea-soarelui")d=DEFAULTS[k];
+    var np=clean(Object.assign({},d,{id:newId(),on:true})),at=state.plants.length;
+    for(var j=0;j<state.plants.length;j++)if(state.plants[j].name==="Varză Albă")at=j+1;
+    state.plants.splice(at,0,np);
+  }
+  function save(){try{localStorage.setItem(KEY,JSON.stringify({ver:5,start:state.start,plants:state.plants,mix:state.mix,recipes:state.recipes}));}catch(e){}}
 
   /* ---------- programul calculat ---------- */
   /* Planta cu creșterea cea mai lungă se seamănă în ziua 1; toate ajung la recoltare în aceeași zi (ultima).
@@ -396,7 +408,11 @@ nav button[aria-selected="true"]{color:var(--accent);background:var(--soft)}
         if(c==="Î")note="Seara, pentru semănat mâine.";
         if(c==="U"&&nextR[p.id])note="Doar dimineața.";
         var tr=p.trays>0?trTxt(p.trays):"";
-        if(tr&&(c==="S"||c==="Î"))note=tr+(note?" · "+note:"");
+        if(c==="S"||c==="Î"){
+          var sd=p.seed>0?(p.trays>0?p.trays+" × "+p.seed+" g = "+(p.trays*p.seed)+" g semințe":p.seed+" g semințe / tavă"):"";
+          var pre=(tr&&p.seed>0)?"":tr;
+          note=(pre?pre+" · ":"")+(sd?sd+(note?" · ":""):"")+note;
+        }
         if(c==="R"&&tr)note=tr+(p.yg>0?" ≈ "+fmtG(p.trays*p.yg):"");
         body+='<li><span class="pn">'+esc(p.name)+(note?'<small>'+esc(note)+'</small>':'')+'</span><span class="amt">'+amt+'</span></li>';
       });
@@ -531,7 +547,8 @@ nav button[aria-selected="true"]{color:var(--accent);background:var(--soft)}
     h+='</div>';
     h+='<div class="total"><div><div class="s" style="text-align:left">Recoltă estimată</div><div class="n">'+(R.est>0?fmtG(R.est):"0 g")+'</div></div>'+
       '<div class="s">'+trTxt(R.trays)+'<br>din care în mix: '+fmtG(R.A)+'</div></div>';
-    h+='<p class="fine">Randamentele (g / tavă) sunt orientative pentru tava de 24,5 × 32,5 cm. După prima recoltă, cântărește și corectează valorile: estimarea devine exactă pentru cultura ta.</p>';
+    h+='<p class="fine">Randamentele (g / tavă) sunt orientative pentru tava de 30,5 × 22,5 cm. După prima recoltă, cântărește și corectează valorile: estimarea devine exactă pentru cultura ta.</p>';
+    h+=seedHtml(R);
     if(R.trays===0)h+='<div class="notice">Încă nu ai pus nicio tăviță. Apasă + lângă fiecare plantă pe care ai semănat-o.</div>';
 
     h+=rcHtml();
@@ -619,6 +636,14 @@ nav button[aria-selected="true"]{color:var(--accent);background:var(--soft)}
     }else h+='<p class="empty" style="margin-top:14px">Alege câteva caserole ca să apară necesarul de plante.</p>';
     return h+'</div>';
   }
+  /* semințe necesare pentru tăvițele puse mai sus */
+  function seedHtml(R){
+    var rows=R.items.filter(function(x){return x.p.trays>0&&x.p.seed>0;});
+    if(!rows.length)return"";
+    var tot=0,h='<div class="card"><h3>Semințe necesare la semănat</h3><div class="scroll"><table class="rt"><thead><tr><th class="pl">Plantă</th><th>Tăvi</th><th>g / tavă</th><th>Total</th></tr></thead><tbody>';
+    rows.forEach(function(x){var t=x.p.trays*x.p.seed;tot+=t;h+='<tr><td class="pl">'+esc(x.p.name)+'</td><td>'+x.p.trays+'</td><td>'+x.p.seed+' g</td><td>'+fmtG(t)+'</td></tr>';});
+    return h+'<tr class="sum"><th class="pl">Total</th><td></td><td></td><td>'+fmtG(tot)+'</td></tr></tbody></table></div><p class="fine">Semințe uscate, cântărite înainte de înmuiere. Sunt valori orientative pentru tava de 30,5 × 22,5 cm; schimbă-le în Setări după semințele tale (mărime, puritate, încolțire).</p></div>';
+  }
   function patchPlant(id,obj){
     for(var i=0;i<state.plants.length;i++)if(state.plants[i].id===id){state.plants[i]=clean(Object.assign({},state.plants[i],obj));return state.plants[i];}
     return null;
@@ -683,7 +708,8 @@ nav button[aria-selected="true"]{color:var(--accent);background:var(--soft)}
         '<div><label for="gr'+i+'">Zile până la recoltare</label><input type="number" inputmode="numeric" min="1" max="40" id="gr'+i+'" value="'+p.grow+'"></div>'+
         '<div><label for="dk'+i+'">Zile în întuneric</label><input type="number" inputmode="numeric" min="0" id="dk'+i+'" value="'+p.dark+'"></div>'+
         '<div><label for="sp'+i+'">ml / pulverizare</label><input type="number" inputmode="numeric" min="0" step="5" id="sp'+i+'" value="'+p.sp+'"></div>'+
-        '<div><label for="wa'+i+'">ml udare de jos / zi</label><input type="number" inputmode="numeric" min="0" step="10" id="wa'+i+'" value="'+p.wa+'"></div>'+
+        '<div><label for="wa'+i+'">ml udare de jos / zi</label><input type="number" inputmode="numeric" min="0" step="5" id="wa'+i+'" value="'+p.wa+'"></div>'+
+        '<div style="grid-column:1/-1"><label for="se'+i+'">Semințe uscate / tavă (g)</label><input type="number" inputmode="numeric" min="0" step="1" id="se'+i+'" value="'+p.seed+'"></div>'+
       '</div>'+
       '<div class="checks"><label class="chk"><input type="checkbox" id="so'+i+'"'+(p.soak?" checked":"")+'>Înmoi semințele</label>'+
       '<label class="chk"><input type="checkbox" id="wt'+i+'"'+(p.weight?" checked":"")+'>Greutate peste tavă</label></div>'+
@@ -740,7 +766,7 @@ nav button[aria-selected="true"]{color:var(--accent);background:var(--soft)}
   }
   function syncCard(p,i){
     var set=function(id,v){var e=$(id+i);if(e&&e!==document.activeElement)e.value=v;else if(e)e.value=v;};
-    set("nm",p.name);set("gr",p.grow);set("dk",p.dark);set("sp",p.sp);set("wa",p.wa);
+    set("nm",p.name);set("gr",p.grow);set("dk",p.dark);set("sp",p.sp);set("wa",p.wa);set("se",p.seed);
     set("sd",p.sowDate||"");set("ld",p.lightDate||"");
     var c=$("card"+i);if(c)c.classList.toggle("off",!p.on);
   }
@@ -757,6 +783,7 @@ nav button[aria-selected="true"]{color:var(--accent);background:var(--soft)}
     $("dk"+i).onchange=function(e){upd({dark:e.target.value});};
     $("sp"+i).onchange=function(e){upd({sp:e.target.value});};
     $("wa"+i).onchange=function(e){upd({wa:e.target.value});};
+    $("se"+i).onchange=function(e){upd({seed:e.target.value});};
     $("sd"+i).onchange=function(e){upd({sowDate:e.target.value});};
     $("ld"+i).onchange=function(e){upd({lightDate:e.target.value});};
     $("rs"+i).onclick=function(){upd({sowDate:null,lightDate:null});};
@@ -787,6 +814,7 @@ nav button[aria-selected="true"]{color:var(--accent);background:var(--soft)}
   refresh();
 })();
 </script>
+
 <script>
 if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){});});}
 </script>
