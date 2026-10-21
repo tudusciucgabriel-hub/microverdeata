@@ -390,7 +390,7 @@ nav button[aria-selected="true"]{color:var(--accent);background:var(--soft)}
     if(t<1)h+='<div class="notice">Programul începe pe '+esc(fLong.format(dayDate(1)))+' (peste '+(1-t)+' '+(1-t===1?"zi":"zile")+').</div>';
     else if(t>N)h+='<div class="notice">Programul s-a încheiat. Schimbi data de start din Setări pentru un nou ciclu.</div>';
     var tomR=[],todR=[],nextR={};
-    SC.rows.forEach(function(r){if(r.codes[d+1]==="R"){tomR.push(r.p.name);nextR[r.p.id]=1;}if(r.codes[d]==="R")todR.push(r.p.name);});
+    SC.rows.forEach(function(r){if(r.codes[d+1]==="R"){tomR.push(dn(r.p));nextR[r.p.id]=1;}if(r.codes[d]==="R")todR.push(dn(r.p));});
     var who=function(a){return a.length===SC.rows.length&&a.length>1?"toate plantele":a.join(", ");};
     if(tomR.length)h+='<div class="notice warn">Mâine recoltezi: '+esc(who(tomR))+'. Ultima udare la ele: doar dimineața.</div>';
     if(todR.length)h+='<div class="notice warn">Zi de recoltare: '+esc(who(todR))+'. Nu mai uzi, tai dimineața.</div>';
@@ -414,7 +414,7 @@ nav button[aria-selected="true"]{color:var(--accent);background:var(--soft)}
           note=(pre?pre+" · ":"")+(sd?sd+(note?" · ":""):"")+note;
         }
         if(c==="R"&&tr)note=tr+(p.yg>0?" ≈ "+fmtG(p.trays*p.yg):"");
-        body+='<li><span class="pn">'+esc(p.name)+(note?'<small>'+esc(note)+'</small>':'')+'</span><span class="amt">'+amt+'</span></li>';
+        body+='<li><span class="pn">'+esc(dn(p))+(note?'<small>'+esc(note)+'</small>':'')+'</span><span class="amt">'+amt+'</span></li>';
       });
       body+='</ul></div>';
     });
@@ -460,7 +460,7 @@ nav button[aria-selected="true"]{color:var(--accent);background:var(--soft)}
     if(!SC.N){el.innerHTML='<h2 class="sec-title">Program pe zile</h2>'+emptyMsg();return;}
     var t=todayDay(),h='<h2 class="sec-title">Program pe zile</h2>'+modeSwitch()+'<p class="sec-sub">'+(SC.same?'Toate plantele se recoltează în ziua '+SC.N+'.':'Plantele se recoltează în zile diferite (R în tabel).')+' Coloana zilei de azi e marcată cu roșu.</p><div class="scroll"><table>'+head(SC.N,t)+'<tbody>';
     SC.rows.forEach(function(r){
-      h+='<tr><td class="pl">'+esc(r.p.name)+'</td>';
+      h+='<tr><td class="pl">'+esc(dn(r.p))+'</td>';
       for(var d=1;d<=SC.N;d++){var c=r.codes[d]||"";h+='<td class="'+(c?"c-"+c:"")+(d===t?" today":"")+'">'+c+'</td>';}
       h+='</tr>';
     });
@@ -473,7 +473,7 @@ nav button[aria-selected="true"]{color:var(--accent);background:var(--soft)}
     var t=todayDay(),tot=[],h='<h2 class="sec-title">Cantități de apă</h2>'+modeSwitch()+'<p class="sec-sub">Mililitri pe tavă. „2 × 20” înseamnă 2 pulverizări pe zi, de câte 20 ml.</p><div class="scroll"><table>'+head(SC.N,t)+'<tbody>';
     for(var d=1;d<=SC.N;d++)tot[d]=0;
     SC.rows.forEach(function(r){
-      var p=r.p;h+='<tr><td class="pl">'+esc(p.name)+'</td>';
+      var p=r.p;h+='<tr><td class="pl">'+esc(dn(p))+'</td>';
       for(d=1;d<=SC.N;d++){
         var c=r.codes[d]||"",cell="";
         if(c==="S"||c==="P"){cell='<span class="sm">'+c+'</span>2×'+p.sp;tot[d]+=2*p.sp;}
@@ -539,7 +539,7 @@ nav button[aria-selected="true"]{color:var(--accent);background:var(--soft)}
     h+='<div class="prows">';
     R.items.forEach(function(x){
       var p=x.p;
-      h+='<div class="prow"><div class="l1"><span class="nm">'+esc(p.name)+'</span>'+stepper('data-f="trays" data-id="'+p.id+'"',p.trays,"Tăvițe semănate, "+p.name)+'</div>'+
+      h+='<div class="prow"><div class="l1"><span class="nm">'+esc(dn(p))+'</span>'+stepper('data-f="trays" data-id="'+p.id+'"',p.trays,"Tăvițe semănate, "+p.name)+'</div>'+
         '<div class="l2"><label class="yg">g / tavă<input type="number" inputmode="numeric" min="0" step="10" data-f="yg" data-id="'+p.id+'" value="'+p.yg+'"></label>'+
         '<label class="chk"><input type="checkbox" data-f="mix" data-id="'+p.id+'"'+(p.mix?" checked":"")+'>În mix</label>'+
         '<span class="est">'+(x.h>0?"≈ "+fmtG(x.h):"—")+'</span></div></div>';
@@ -584,6 +584,13 @@ nav button[aria-selected="true"]{color:var(--accent);background:var(--soft)}
     el.innerHTML=h;
   }
   /* ---------- rețetele de mix ---------- */
+  /* nume afișat: dacă există mai multe culturi cu același nume, adaugă numărul și data semănării */
+  function dn(p){
+    var same=state.plants.filter(function(x){return x.name.toLowerCase()===p.name.toLowerCase();});
+    if(same.length<2)return p.name;
+    var k=same.indexOf(p)+1,d=p.sowDate?" · "+p.sowDate.slice(8,10)+"."+p.sowDate.slice(5,7):"";
+    return p.name+" ("+k+d+")";
+  }
   function findPlant(name){var n=String(name).toLowerCase();for(var i=0;i<state.plants.length;i++)if(state.plants[i].name.toLowerCase()===n)return state.plants[i];return null;}
   function rcById(id){for(var i=0;i<state.recipes.length;i++)if(state.recipes[i].id===id)return state.recipes[i];return null;}
   function rcCalc(){
@@ -596,8 +603,9 @@ nav button[aria-selected="true"]{color:var(--accent);background:var(--soft)}
       });
     });
     var rows=order.filter(function(n){return need[n]>0;}).map(function(n){
-      var p=findPlant(n),act=p&&p.on;
-      return{n:n,need:need[n],p:p,act:act,have:act?p.trays*p.yg:0,
+      var p=findPlant(n),act=p&&p.on,ln=n.toLowerCase(),have=0;
+      state.plants.forEach(function(x){if(x.on&&x.name.toLowerCase()===ln)have+=x.trays*x.yg;});
+      return{n:n,need:need[n],p:p,act:act,have:have,
         tn:(act&&p.yg>0)?Math.ceil(need[n]*1.1/p.yg-1e-9):null};
     });
     var missing=all.filter(function(n){return !findPlant(n);});
@@ -641,7 +649,7 @@ nav button[aria-selected="true"]{color:var(--accent);background:var(--soft)}
     var rows=R.items.filter(function(x){return x.p.trays>0&&x.p.seed>0;});
     if(!rows.length)return"";
     var tot=0,h='<div class="card"><h3>Semințe necesare la semănat</h3><div class="scroll"><table class="rt"><thead><tr><th class="pl">Plantă</th><th>Tăvi</th><th>g / tavă</th><th>Total</th></tr></thead><tbody>';
-    rows.forEach(function(x){var t=x.p.trays*x.p.seed;tot+=t;h+='<tr><td class="pl">'+esc(x.p.name)+'</td><td>'+x.p.trays+'</td><td>'+x.p.seed+' g</td><td>'+fmtG(t)+'</td></tr>';});
+    rows.forEach(function(x){var t=x.p.trays*x.p.seed;tot+=t;h+='<tr><td class="pl">'+esc(dn(x.p))+'</td><td>'+x.p.trays+'</td><td>'+x.p.seed+' g</td><td>'+fmtG(t)+'</td></tr>';});
     return h+'<tr class="sum"><th class="pl">Total</th><td></td><td></td><td>'+fmtG(tot)+'</td></tr></tbody></table></div><p class="fine">Semințe uscate, cântărite înainte de înmuiere. Sunt valori orientative pentru tava de 30,5 × 22,5 cm; schimbă-le în Setări după semințele tale (mărime, puritate, încolțire).</p></div>';
   }
   function patchPlant(id,obj){
@@ -719,6 +727,7 @@ nav button[aria-selected="true"]{color:var(--accent);background:var(--soft)}
           '<div><label for="ld'+i+'">Scoaterea la lumină (automată, o poți schimba)</label><input type="date" id="ld'+i+'" value="'+(p.lightDate||"")+'"></div>'+
         '</div><p class="fine" id="eff'+i+'"></p>'+
         '<button class="btn" id="rs'+i+'" style="height:40px;margin-top:4px">Pune totul pe automat</button></div>'+
+      '<button class="btn full" id="dup'+i+'" style="height:40px;margin-bottom:8px">Duplică (aceeași plantă, altă dată de semănat)</button>'+
       '<button class="btn danger'+(state.armedDel===p.id?" armed":"")+'" id="del'+i+'">'+(state.armedDel===p.id?"Apasă încă o dată pentru a șterge":"Șterge planta")+'</button>'+
     '</div>';
   }
@@ -789,6 +798,13 @@ nav button[aria-selected="true"]{color:var(--accent);background:var(--soft)}
     $("rs"+i).onclick=function(){upd({sowDate:null,lightDate:null});};
     $("so"+i).onchange=function(e){upd({soak:e.target.checked});};
     $("wt"+i).onchange=function(e){upd({weight:e.target.checked});};
+    $("dup"+i).onclick=function(){
+      var cur=state.plants[i];if(!cur)return;
+      var np=clean(Object.assign({},cur,{id:newId(),trays:0,sowDate:"",lightDate:"",on:true}));
+      state.plants.splice(i+1,0,np);state.armedDel=null;state.toast="Duplicat: "+cur.name+". Alege data semănatului în cardul nou.";
+      save();resetView();refresh();renderSet();
+      var c=$("card"+(i+1));if(c&&c.scrollIntoView)try{c.scrollIntoView({block:"center"});}catch(e){}
+    };
     $("del"+i).onclick=function(){
       var cur=state.plants[i];if(!cur)return;
       if(state.armedDel!==cur.id){state.armedDel=cur.id;renderSet();return;}
