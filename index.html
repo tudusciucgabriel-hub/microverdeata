@@ -150,6 +150,9 @@ select{appearance:auto}
 .plist-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-top:22px}
 .plist-head h3{font-size:1.1rem}
 .plist-head span{color:var(--muted);font-size:.85rem}
+.sharebar{position:fixed;z-index:30;left:12px;right:12px;top:12px;background:var(--surface);border:2px solid var(--accent);border-radius:14px;padding:14px;box-shadow:0 6px 24px rgba(0,0,0,.25)}
+.sharebar p{margin:0 0 10px;font-size:.95rem}.sharebar .row{display:flex;gap:8px}.sharebar .btn{flex:1}
+.shareurl{width:100%;box-sizing:border-box;margin-top:8px;font-size:.8rem}
 .toast{margin-top:10px;color:var(--accent);font-weight:600;font-size:.9rem;min-height:1.2em}
 /* recoltă + mix */
 .prows{background:var(--surface);border:1px solid var(--line);border-radius:14px;margin-top:12px}
@@ -585,6 +588,49 @@ nav button[aria-selected="true"]{color:var(--accent);background:var(--soft)}
   }
   /* ---------- rețetele de mix ---------- */
   /* nume afișat: dacă există mai multe culturi cu același nume, adaugă numărul și data semănării */
+  /* ---------- Partajare prin link ---------- */
+  function b64e(bytes){var s="";for(var i=0;i<bytes.length;i++)s+=String.fromCharCode(bytes[i]);return btoa(s).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");}
+  function b64d(t){t=t.replace(/-/g,"+").replace(/_/g,"/");while(t.length%4)t+="=";var b=atob(t),u=new Uint8Array(b.length);for(var i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u;}
+  function pipe(bytes,Ctor,mode){var st=new Ctor(mode);var w=st.writable.getWriter();w.write(bytes);w.close();return new Response(st.readable).arrayBuffer().then(function(b){return new Uint8Array(b);});}
+  function shareCode(){
+    var json=JSON.stringify({ver:5,start:state.start,plants:state.plants,mix:state.mix,recipes:state.recipes});
+    var bytes=new TextEncoder().encode(json);
+    if(typeof CompressionStream==="function")return pipe(bytes,CompressionStream,"deflate-raw").then(function(z){return "z"+b64e(z);}).catch(function(){return "r"+b64e(bytes);});
+    return Promise.resolve("r"+b64e(bytes));
+  }
+  function readCode(c){
+    var raw=b64d(c.slice(1));
+    if(c.charAt(0)==="z"){if(typeof DecompressionStream!=="function")return Promise.reject(new Error("no"));return pipe(raw,DecompressionStream,"deflate-raw").then(function(u){return new TextDecoder().decode(u);});}
+    return Promise.resolve(new TextDecoder().decode(raw));
+  }
+  function checkIncoming(){
+    var m=/[#&]d=([A-Za-z0-9_-]+)/.exec(location.hash||"");if(!m)return;
+    var code=m[1];
+    readCode(code).then(function(json){
+      var o=JSON.parse(json);if(!o||!Array.isArray(o.plants))throw new Error("bad");
+      var bar=document.createElement("div");bar.className="sharebar";
+      bar.innerHTML='<p><b>Ai primit un program partajat</b> ('+o.plants.length+' plante). Dacă îl încarci, înlocuiește programul de pe acest telefon.</p><div class="row"><button class="btn primary" id="shYes">Încarcă programul</button><button class="btn" id="shNo">Nu, las-o așa</button></div>';
+      document.body.appendChild(bar);
+      var clear=function(){try{history.replaceState(null,"",location.pathname+location.search);}catch(e){location.hash="";}};
+      document.getElementById("shNo").onclick=function(){clear();bar.remove();};
+      document.getElementById("shYes").onclick=function(){try{localStorage.setItem(KEY,json);}catch(e){}clear();location.reload();};
+    }).catch(function(){});
+  }
+  function shareBind(){
+    var b=$("shareBtn");if(!b)return;
+    b.onclick=function(){
+      b.disabled=true;
+      shareCode().then(function(code){
+        b.disabled=false;
+        var url=location.href.split("#")[0]+"#d="+code,box=$("shareUrl");
+        box.value=url;box.style.display="block";box.focus();box.select();
+        var msg=$("shareMsg");
+        if(navigator.share){navigator.share({title:"Program Microverdeață",url:url}).catch(function(){});msg.textContent="Alege aplicația prin care trimiți linkul.";}
+        else if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(url).then(function(){msg.textContent="Link copiat. Lipește-l într-un mesaj.";},function(){msg.textContent="Copiază linkul de mai jos.";});}
+        else msg.textContent="Copiază linkul de mai jos.";
+      });
+    };
+  }
   function dn(p){
     var same=state.plants.filter(function(x){return x.name.toLowerCase()===p.name.toLowerCase();});
     if(same.length<2)return p.name;
@@ -744,11 +790,13 @@ nav button[aria-selected="true"]{color:var(--accent);background:var(--soft)}
       PRESETS.map(function(p,i){var has=state.plants.some(function(x){return x.name===p.name;});return'<option value="'+i+'">'+esc(p.name)+' ('+p.grow+' zile)'+(has?' · în listă':'')+'</option>';}).join("")+'</select>'+
       '<button class="btn primary full" id="add">Adaugă în listă</button>'+
       '<p class="fine">Valorile din listă sunt orientative. După adăugare le poți schimba în cardul plantei.</p><div class="toast" id="toast">'+esc(state.toast)+'</div></div>'+
+      '<div class="card"><h3>Trimite programul altcuiva</h3><p class="fine" style="margin-top:0">Generează un link care conține plantele, tăvile și toate datele introduse (inclusiv datele de semănat). Cine îl deschide primește o copie a programului tău, pe care o poate modifica. Este o copie de la momentul trimiterii: dacă schimbi ceva după aceea, trimite un link nou.</p><button class="btn primary full" id="shareBtn">Creează link</button><input type="text" readonly id="shareUrl" class="shareurl" style="display:none"><div class="toast" id="shareMsg"></div></div>'+
       '<button class="btn danger full'+(state.armedReset?" armed":"")+'" id="reset">'+(state.armedReset?"Apasă încă o dată pentru a confirma":"Revino la lista și valorile implicite")+'</button>'+
       '<p class="fine">Setările rămân memorate pe acest telefon, în acest browser.</p>';
     el.innerHTML=h;
     $("startDate").onchange=function(e){var v=validDate(e.target.value);if(v){state.start=v;save();resetView();refresh();syncAuto();}};
     state.plants.forEach(function(p,i){bindCard(p,i);});
+    shareBind();
     syncAuto();
     $("add").onclick=function(){
       var k=+$("preset").value,base=k>=0?PRESETS[k]:{name:"Plantă nouă",grow:9,dark:3,soak:false,weight:false,sp:20,wa:90};
@@ -825,6 +873,7 @@ nav button[aria-selected="true"]{color:var(--accent);background:var(--soft)}
   Array.prototype.forEach.call(document.querySelectorAll("nav button"),function(b){b.onclick=function(){showTab(b.dataset.tab);};});
 
   load();
+  checkIncoming();
   bindRec();
   resetView();
   refresh();
